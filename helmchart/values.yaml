@@ -1,14 +1,34 @@
 env:
-  productCatalogServiceAddr: "productcatalogservice:3550"
-  shippingServiceAddr: "shippingservice:50051"
-  paymentServiceAddr: "paymentservice:50051"
-  emailServiceAddr: "emailservice:5000"
-  currencyServiceAddr: "currencyservice:7000"
-  cartServiceAddr: "cartservice:7070"
-  checkoutServiceAddr: "checkoutservice:5050"
-  AdServiceAddr: "adservice:9555"
-  recommendationServiceAddr: "recommendationservice:8080"
-  redisAddr: "redis-cart:6379"
+  productCatalogService:
+    addr: productcatalogservice
+    port: 3550
+  shippingService:
+    addr: shippingservice
+    port: 50051
+  paymentService:
+    addr: paymentservice
+    port: 50051
+  emailService:
+    addr: emailservice
+    port: 5000
+  currencyService:
+    addr: currencyservice
+    port: 7000
+  cartService:
+    addr: cartservice
+    port: 7070
+  checkoutService:
+    addr: checkoutservice
+    port: 5050
+  AdService:
+    addr: adservice
+    port: 9555
+  recommendationServiceAddr:
+    addr: recommendationservice
+    port: 8080
+  redisCart:
+    addr: redis-cart
+    port: 6379
   jaegerServiceAddr: "jaeger-collector:14268"
 
 emailService:

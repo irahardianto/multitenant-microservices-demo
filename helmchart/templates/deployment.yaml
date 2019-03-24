@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: emailservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -37,6 +38,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: checkoutservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -59,17 +61,17 @@ spec:
               command: {{ printf "[%q, \"-addr=:%v\"]" .Values.checkoutService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.checkoutService.healthChecks.livenessProbe.exec.probePort }}
           env:
           - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: {{ .Values.env.productCatalogServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
           - name: SHIPPING_SERVICE_ADDR
-            value: {{ .Values.env.shippingServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.shippingService.addr .Release.Name .Values.env.shippingService.port }}
           - name: PAYMENT_SERVICE_ADDR
-            value: {{ .Values.env.paymentServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.paymentService.addr .Release.Name .Values.env.paymentService.port }}
           - name: EMAIL_SERVICE_ADDR
-            value: {{ .Values.env.emailServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.emailService.addr .Release.Name .Values.env.emailService.port }}
           - name: CURRENCY_SERVICE_ADDR
-            value: {{ .Values.env.currencyServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.currencyService.addr .Release.Name .Values.env.currencyService.port }}
           - name: CART_SERVICE_ADDR
-            value: {{ .Values.env.cartServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.cartService.addr .Release.Name .Values.env.cartService.port }}
           # - name: JAEGER_SERVICE_ADDR
           #   value: {{ .Values.env.jaegerServiceAddr }}
           resources:
@@ -84,6 +86,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: recommendationservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -109,7 +112,7 @@ spec:
             command: {{ printf "[%q, \"-addr=:%v\"]" .Values.recommendationService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.recommendationService.healthChecks.livenessProbe.exec.probePort }}
         env:
         - name: PRODUCT_CATALOG_SERVICE_ADDR
-          value: {{ .Values.env.productCatalogServiceAddr }}
+          value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
         resources:
             requests:
               cpu: {{ .Values.recommendationService.resources.requests.cpu }}
@@ -122,6 +125,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -154,19 +158,19 @@ spec:
                 value: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.httpHeaders.value }}
           env:
           - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: {{ .Values.env.productCatalogServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
           - name: CURRENCY_SERVICE_ADDR
-            value: {{ .Values.env.currencyServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.currencyService.addr .Release.Name .Values.env.currencyService.port }}
           - name: CART_SERVICE_ADDR
-            value: {{ .Values.env.cartServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.cartService.addr .Release.Name .Values.env.cartService.port }}
           - name: RECOMMENDATION_SERVICE_ADDR
-            value: {{ .Values.env.recommendationServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.recommendationService.addr .Release.Name .Values.env.recommendationService.port }}
           - name: SHIPPING_SERVICE_ADDR
-            value: {{ .Values.env.shippingServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.shippingService.addr .Release.Name .Values.env.shippingService.port }}
           - name: CHECKOUT_SERVICE_ADDR
-            value: {{ .Values.env.checkoutServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.checkoutService.addr .Release.Name .Values.env.checkoutService.port }}
           - name: AD_SERVICE_ADDR
-            value: {{ .Values.env.AdServiceAddr }}
+            value: {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.AdService.addr .Release.Name .Values.env.AdService.port }}
           # - name: JAEGER_SERVICE_ADDR
           #   value: {{ .Values.env.jaegerServiceAddr }}
           resources:
@@ -181,6 +185,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: paymentservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -214,6 +219,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: productcatalogservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -250,6 +256,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cartservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -267,7 +274,7 @@ spec:
         - containerPort: {{ .Values.cartService.ports.containerPort }}
         env:
         - name: REDIS_ADDR
-          value: {{ .Values.env.redisAddr }}
+          value:  {{ printf "%s.%s.svc.cluster.local:%s" .Values.env.redisCart.addr .Release.Name .Values.env.redisCart.port }}
         - name: PORT
           value: "7070"
         - name: LISTEN_ADDR
@@ -293,6 +300,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: currencyservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -327,6 +335,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shippingservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -363,6 +372,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-cart
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -403,6 +413,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: adservice
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
