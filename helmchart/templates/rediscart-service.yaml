@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cart
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.redisCart.service.type }}
+  selector:
+    app: redis-cart
+  ports:
+  - name: {{ .Values.redisCart.service.name }}
+    port: {{ .Values.redisCart.service.port }}
+    targetPort: {{ .Values.redisCart.ports.containerPort }}

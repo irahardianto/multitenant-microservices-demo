@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.cartService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.cartService.image.repository .Values.cartService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.cartService.ports.containerPort }}
+        env:
+        - name: REDIS_ADDR
+          value:  {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.redisCart.addr .Release.Name .Values.env.redisCart.port }}
+        - name: PORT
+          value: "7070"
+        - name: LISTEN_ADDR
+          value: "0.0.0.0"
+        resources:
+          requests:
+            cpu: {{ .Values.cartService.resources.requests.cpu }}
+            memory: {{ .Values.cartService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.cartService.resources.limits.cpu }}
+            memory: {{ .Values.cartService.resources.limits.memory }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.cartService.healthChecks.livenessProbe.initialDelaySeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.cartService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.cartService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.cartService.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.cartService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.cartService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.cartService.healthChecks.livenessProbe.exec.probePort }}

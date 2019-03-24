@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailservice
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.emailService.service.type }}
+  selector:
+    app: emailservice
+  ports:
+  - name: {{ .Values.emailService.service.name }}
+    port: {{ .Values.emailService.service.port }}
+    targetPort: {{ .Values.emailService.ports.containerPort }}

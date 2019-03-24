@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: emailservice
+  template:
+    metadata:
+      labels:
+        app: emailservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.emailService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.emailService.image.repository .Values.emailService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.emailService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.emailService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.emailService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.emailService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          periodSeconds: {{ .Values.emailService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.emailService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.emailService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.emailService.resources.requests.cpu }}
+            memory: {{ .Values.emailService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.emailService.resources.limits.cpu }}
+            memory: {{ .Values.emailService.resources.limits.memory }}

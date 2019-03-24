@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkoutservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: checkoutservice
+  template:
+    metadata:
+      labels:
+        app: checkoutservice
+    spec:
+      containers:
+        - name: server
+          image: {{ printf "%s:%s" .Values.checkoutService.image.repository .Values.checkoutService.image.tag }}
+          ports:
+          - containerPort: {{ .Values.checkoutService.ports.containerPort }}
+          readinessProbe:
+            exec:
+              command: {{ printf "[%q, \"-addr=:%v\"]" .Values.checkoutService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.checkoutService.healthChecks.readinessProbe.exec.probePort }}
+          livenessProbe:
+            exec:
+              command: {{ printf "[%q, \"-addr=:%v\"]" .Values.checkoutService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.checkoutService.healthChecks.livenessProbe.exec.probePort }}
+          env:
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
+          - name: SHIPPING_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.shippingService.addr .Release.Name .Values.env.shippingService.port }}
+          - name: PAYMENT_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.paymentService.addr .Release.Name .Values.env.paymentService.port }}
+          - name: EMAIL_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.emailService.addr .Release.Name .Values.env.emailService.port }}
+          - name: CURRENCY_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.currencyService.addr .Release.Name .Values.env.currencyService.port }}
+          - name: CART_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.cartService.addr .Release.Name .Values.env.cartService.port }}
+          # - name: JAEGER_SERVICE_ADDR
+          #   value: {{ .Values.env.jaegerServiceAddr }}
+          resources:
+            requests:
+              cpu: {{ .Values.checkoutService.resources.requests.cpu }}
+              memory: {{ .Values.checkoutService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.checkoutService.resources.limits.cpu }}
+              memory: {{ .Values.checkoutService.resources.limits.memory }}

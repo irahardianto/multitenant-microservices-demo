@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productcatalogservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      labels:
+        app: productcatalogservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.productCatalogService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.productCatalogService.image.repository .Values.productCatalogService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.productCatalogService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.productCatalogService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.productCatalogService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.productCatalogService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.productCatalogService.healthChecks.livenessProbe.exec.probePort }}
+#        env:
+#          - name: JAEGER_SERVICE_ADDR
+#            value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.productCatalogService.resources.requests.cpu }}
+            memory: {{ .Values.productCatalogService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.productCatalogService.resources.limits.cpu }}
+            memory: {{ .Values.productCatalogService.resources.limits.memory }}

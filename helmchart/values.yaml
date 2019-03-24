@@ -23,7 +23,7 @@ env:
   AdService:
     addr: adservice
     port: 9555
-  recommendationServiceAddr:
+  recommendationService:
     addr: recommendationservice
     port: 8080
   redisCart:

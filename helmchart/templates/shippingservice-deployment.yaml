@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shippingservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: shippingservice
+  template:
+    metadata:
+      labels:
+        app: shippingservice
+    spec:
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.shippingService.image.repository .Values.shippingService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.shippingService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.shippingService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.shippingService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.shippingService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.shippingService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.shippingService.healthChecks.livenessProbe.exec.probePort }}
+#        env:
+#          - name: JAEGER_SERVICE_ADDR
+#            value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.shippingService.resources.requests.cpu }}
+            memory: {{ .Values.shippingService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.shippingService.resources.limits.cpu }}
+            memory: {{ .Values.shippingService.resources.limits.memory }}

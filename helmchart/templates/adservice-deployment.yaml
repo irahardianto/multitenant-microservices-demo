@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.adsService.image.repository .Values.adsService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.adsService.ports.containerPort }}
+        env:
+        - name: PORT
+          value: "9555"
+        #- name: JAEGER_SERVICE_ADDR
+        #  value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.adsService.resources.requests.cpu }}
+            memory: {{ .Values.adsService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.adsService.resources.limits.cpu }}
+            memory: {{ .Values.adsService.resources.limits.memory }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.adsService.healthChecks.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.adsService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.adsService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.adsService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.adsService.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.adsService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.adsService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.adsService.healthChecks.livenessProbe.exec.probePort }}

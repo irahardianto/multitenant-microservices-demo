@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: server
+          image: {{ printf "%s:%s" .Values.frontend.image.repository .Values.frontend.image.tag }}
+          ports:
+          - containerPort: {{ .Values.frontend.ports.containerPort }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.frontend.healthChecks.readinessProbe.initialDelaySeconds }}
+            httpGet:
+              path: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.path }}
+              port: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.port }}
+              httpHeaders:
+              - name: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.httpHeaders.name }}
+                value: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.httpHeaders.value }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.frontend.healthChecks.livenessProbe.initialDelaySeconds }}
+            httpGet:
+              path: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.path }}
+              port: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.port }}
+              httpHeaders:
+              - name: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.httpHeaders.name }}
+                value: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.httpHeaders.value }}
+          env:
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
+          - name: CURRENCY_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.currencyService.addr .Release.Name .Values.env.currencyService.port }}
+          - name: CART_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.cartService.addr .Release.Name .Values.env.cartService.port }}
+          - name: RECOMMENDATION_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.recommendationService.addr .Release.Name .Values.env.recommendationService.port }}
+          - name: SHIPPING_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.shippingService.addr .Release.Name .Values.env.shippingService.port }}
+          - name: CHECKOUT_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.checkoutService.addr .Release.Name .Values.env.checkoutService.port }}
+          - name: AD_SERVICE_ADDR
+            value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.AdService.addr .Release.Name .Values.env.AdService.port }}
+          # - name: JAEGER_SERVICE_ADDR
+          #   value: {{ .Values.env.jaegerServiceAddr }}
+          resources:
+            requests:
+              cpu: {{ .Values.cartService.resources.requests.cpu }}
+              memory: {{ .Values.cartService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.cartService.resources.limits.cpu }}
+              memory: {{ .Values.cartService.resources.limits.memory }}

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymentservice
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.paymentService.service.type }}
+  selector:
+    app: paymentservice
+  ports:
+  - name: {{ .Values.paymentService.service.name }}
+    port: {{ .Values.paymentService.service.port }}
+    targetPort: {{ .Values.paymentService.ports.containerPort }}

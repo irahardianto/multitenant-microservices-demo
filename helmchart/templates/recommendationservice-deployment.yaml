@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendationservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: recommendationservice
+  template:
+    metadata:
+      labels:
+        app: recommendationservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.recommendationService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.recommendationService.image.repository .Values.recommendationService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.recommendationService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.recommendationService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.recommendationService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.recommendationService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          periodSeconds: {{ .Values.recommendationService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.recommendationService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.recommendationService.healthChecks.livenessProbe.exec.probePort }}
+        env:
+        - name: PRODUCT_CATALOG_SERVICE_ADDR
+          value: {{ printf "%s.%s.svc.cluster.local:%v" .Values.env.productCatalogService.addr .Release.Name .Values.env.productCatalogService.port }}
+        resources:
+            requests:
+              cpu: {{ .Values.recommendationService.resources.requests.cpu }}
+              memory: {{ .Values.recommendationService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.recommendationService.resources.limits.cpu }}
+              memory: {{ .Values.recommendationService.resources.limits.memory }}

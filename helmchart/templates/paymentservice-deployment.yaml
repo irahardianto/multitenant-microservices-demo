@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymentservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: paymentservice
+  template:
+    metadata:
+      labels:
+        app: paymentservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.paymentService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.paymentService.image.repository .Values.paymentService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.paymentService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.paymentService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.paymentService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.paymentService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.paymentService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.paymentService.resources.requests.cpu }}
+            memory: {{ .Values.paymentService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.paymentService.resources.limits.cpu }}
+            memory: {{ .Values.paymentService.resources.limits.memory }}

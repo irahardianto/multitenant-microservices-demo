@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cart
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: redis-cart
+  template:
+    metadata:
+      labels:
+        app: redis-cart
+    spec:
+      containers:
+      - name: redis
+        image: {{ printf "%s:%s" .Values.redisCart.image.repository .Values.redisCart.image.tag }}
+        ports:
+        - containerPort: {{ .Values.redisCart.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.redisCart.healthChecks.readinessProbe.periodSeconds }}
+          tcpSocket:
+            port: {{ .Values.redisCart.healthChecks.readinessProbe.tcpSocket.port }}
+        livenessProbe:
+          periodSeconds: {{ .Values.redisCart.healthChecks.livenessProbe.periodSeconds }}
+          tcpSocket:
+            port: {{ .Values.redisCart.healthChecks.livenessProbe.tcpSocket.port }}
+        volumeMounts:
+        - mountPath: {{ .Values.redisCart.volumeMounts.mountPath }}
+          name: {{ .Values.redisCart.volumeMounts.name }}
+        resources:
+          requests:
+            cpu: {{ .Values.redisCart.resources.requests.cpu }}
+            memory: {{ .Values.redisCart.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.redisCart.resources.limits.cpu }}
+            memory: {{ .Values.redisCart.resources.limits.memory }}
+      volumes:
+      - name: {{ .Values.redisCart.volumes.name }}
+        emptyDir: {}

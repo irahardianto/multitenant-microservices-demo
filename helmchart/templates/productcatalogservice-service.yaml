@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: productcatalogservice
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.productCatalogService.service.type }}
+  selector:
+    app: productcatalogservice
+  ports:
+  - name: {{ .Values.productCatalogService.service.name }}
+    port: {{ .Values.productCatalogService.service.port }}
+    targetPort: {{ .Values.productCatalogService.ports.containerPort }}

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendationservice
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.recommendationService.service.type }}
+  selector:
+    app: recommendationservice
+  ports:
+  - name: {{ .Values.recommendationService.service.name }}
+    port: {{ .Values.recommendationService.service.port }}
+    targetPort: {{ .Values.recommendationService.ports.containerPort }}

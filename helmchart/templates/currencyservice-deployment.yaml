@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currencyservice
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: currencyservice
+  template:
+    metadata:
+      labels:
+        app: currencyservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.currencyService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.currencyService.image.repository .Values.currencyService.image.tag }}
+        ports:
+        - name: {{ .Values.currencyService.ports.name }}
+          containerPort: {{ .Values.currencyService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.currencyService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.currencyService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.currencyService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.currencyService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.currencyService.resources.requests.cpu }}
+            memory: {{ .Values.currencyService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.currencyService.resources.limits.cpu }}
+            memory: {{ .Values.currencyService.resources.limits.memory }}

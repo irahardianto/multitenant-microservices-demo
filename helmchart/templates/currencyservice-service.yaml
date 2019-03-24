@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: currencyservice
+  namespace: {{ .Release.Name }}
+spec:
+  type: {{ .Values.currencyService.service.type }}
+  selector:
+    app: currencyservice
+  ports:
+  - name: {{ .Values.currencyService.service.name }}
+    port: {{ .Values.currencyService.service.port }}
+    targetPort: {{ .Values.currencyService.ports.containerPort }}
