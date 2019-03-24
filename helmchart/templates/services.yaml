@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailservice
+spec:
+  type: {{ .Values.emailService.service.type }}
+  selector:
+    app: emailservice
+  ports:
+  - name: {{ .Values.emailService.service.name }}
+    port: {{ .Values.emailService.service.port }}
+    targetPort: {{ .Values.emailService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkoutservice
+spec:
+  type: {{ .Values.checkoutService.service.type }}
+  selector:
+    app: checkoutservice
+  ports:
+  - name: {{ .Values.checkoutService.service.name }}
+    port: {{ .Values.checkoutService.service.port }}
+    targetPort: {{ .Values.checkoutService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendationservice
+spec:
+  type: {{ .Values.recommendationService.service.type }}
+  selector:
+    app: recommendationservice
+  ports:
+  - name: {{ .Values.recommendationService.service.name }}
+    port: {{ .Values.recommendationService.service.port }}
+    targetPort: {{ .Values.recommendationService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: {{ .Values.frontend.service.type }}
+  selector:
+    app: frontend
+  ports:
+  - name: {{ .Values.frontend.service.name }}
+    port: {{ .Values.frontend.service.port }}
+    targetPort: {{ .Values.frontend.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-external
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymentservice
+spec:
+  type: {{ .Values.paymentService.service.type }}
+  selector:
+    app: paymentservice
+  ports:
+  - name: {{ .Values.paymentService.service.name }}
+    port: {{ .Values.paymentService.service.port }}
+    targetPort: {{ .Values.paymentService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productcatalogservice
+spec:
+  type: {{ .Values.productCatalogService.service.type }}
+  selector:
+    app: productcatalogservice
+  ports:
+  - name: {{ .Values.productCatalogService.service.name }}
+    port: {{ .Values.productCatalogService.service.port }}
+    targetPort: {{ .Values.productCatalogService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice
+spec:
+  type: {{ .Values.cartService.service.type }}
+  selector:
+    app: cartservice
+  ports:
+  - name: {{ .Values.cartService.service.name }}
+    port: {{ .Values.cartService.service.port }}
+    targetPort: {{ .Values.cartService.ports.containerPort }}
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: currencyservice
+spec:
+  type: {{ .Values.currencyService.service.type }}
+  selector:
+    app: currencyservice
+  ports:
+  - name: {{ .Values.currencyService.service.name }}
+    port: {{ .Values.currencyService.service.port }}
+    targetPort: {{ .Values.currencyService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shippingservice
+spec:
+  type: {{ .Values.shippingService.service.type }}
+  selector:
+    app: shippingservice
+  ports:
+  - name: {{ .Values.shippingService.service.name }}
+    port: {{ .Values.shippingService.service.port }}
+    targetPort: {{ .Values.shippingService.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cart
+spec:
+  type: {{ .Values.redisCart.service.type }}
+  selector:
+    app: redis-cart
+  ports:
+  - name: {{ .Values.redisCart.service.name }}
+    port: {{ .Values.redisCart.service.port }}
+    targetPort: {{ .Values.redisCart.ports.containerPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adservice
+spec:
+  type: {{ .Values.adsService.service.type }}
+  selector:
+    app: adservice
+  ports:
+  - name: {{ .Values.adsService.service.name }}
+    port: {{ .Values.adsService.service.port }}
+    targetPort: {{ .Values.adsService.ports.containerPort }}

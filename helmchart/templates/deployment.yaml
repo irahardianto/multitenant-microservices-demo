@@ -1,0 +1,442 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailservice
+spec:
+  selector:
+    matchLabels:
+      app: emailservice
+  template:
+    metadata:
+      labels:
+        app: emailservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.emailService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.emailService.image.repository .Values.emailService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.emailService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.emailService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.emailService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.emailService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          periodSeconds: {{ .Values.emailService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.emailService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.emailService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.emailService.resources.requests.cpu }}
+            memory: {{ .Values.emailService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.emailService.resources.limits.cpu }}
+            memory: {{ .Values.emailService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkoutservice
+spec:
+  selector:
+    matchLabels:
+      app: checkoutservice
+  template:
+    metadata:
+      labels:
+        app: checkoutservice
+    spec:
+      containers:
+        - name: server
+          image: {{ printf "%s:%s" .Values.checkoutService.image.repository .Values.checkoutService.image.tag }}
+          ports:
+          - containerPort: {{ .Values.checkoutService.ports.containerPort }}
+          readinessProbe:
+            exec:
+              command: {{ printf "[%q, \"-addr=:%v\"]" .Values.checkoutService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.checkoutService.healthChecks.readinessProbe.exec.probePort }}
+          livenessProbe:
+            exec:
+              command: {{ printf "[%q, \"-addr=:%v\"]" .Values.checkoutService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.checkoutService.healthChecks.livenessProbe.exec.probePort }}
+          env:
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: {{ .Values.env.productCatalogServiceAddr }}
+          - name: SHIPPING_SERVICE_ADDR
+            value: {{ .Values.env.shippingServiceAddr }}
+          - name: PAYMENT_SERVICE_ADDR
+            value: {{ .Values.env.paymentServiceAddr }}
+          - name: EMAIL_SERVICE_ADDR
+            value: {{ .Values.env.emailServiceAddr }}
+          - name: CURRENCY_SERVICE_ADDR
+            value: {{ .Values.env.currencyServiceAddr }}
+          - name: CART_SERVICE_ADDR
+            value: {{ .Values.env.cartServiceAddr }}
+          # - name: JAEGER_SERVICE_ADDR
+          #   value: {{ .Values.env.jaegerServiceAddr }}
+          resources:
+            requests:
+              cpu: {{ .Values.checkoutService.resources.requests.cpu }}
+              memory: {{ .Values.checkoutService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.checkoutService.resources.limits.cpu }}
+              memory: {{ .Values.checkoutService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendationservice
+spec:
+  selector:
+    matchLabels:
+      app: recommendationservice
+  template:
+    metadata:
+      labels:
+        app: recommendationservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.recommendationService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.recommendationService.image.repository .Values.recommendationService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.recommendationService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.recommendationService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.recommendationService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.recommendationService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          periodSeconds: {{ .Values.recommendationService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.recommendationService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.recommendationService.healthChecks.livenessProbe.exec.probePort }}
+        env:
+        - name: PRODUCT_CATALOG_SERVICE_ADDR
+          value: {{ .Values.env.productCatalogServiceAddr }}
+        resources:
+            requests:
+              cpu: {{ .Values.recommendationService.resources.requests.cpu }}
+              memory: {{ .Values.recommendationService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.recommendationService.resources.limits.cpu }}
+              memory: {{ .Values.recommendationService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: server
+          image: {{ printf "%s:%s" .Values.frontend.image.repository .Values.frontend.image.tag }}
+          ports:
+          - containerPort: {{ .Values.frontend.ports.containerPort }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.frontend.healthChecks.readinessProbe.initialDelaySeconds }}
+            httpGet:
+              path: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.path }}
+              port: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.port }}
+              httpHeaders:
+              - name: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.httpHeaders.name }}
+                value: {{ .Values.frontend.healthChecks.readinessProbe.httpGet.httpHeaders.value }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.frontend.healthChecks.livenessProbe.initialDelaySeconds }}
+            httpGet:
+              path: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.path }}
+              port: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.port }}
+              httpHeaders:
+              - name: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.httpHeaders.name }}
+                value: {{ .Values.frontend.healthChecks.livenessProbe.httpGet.httpHeaders.value }}
+          env:
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: {{ .Values.env.productCatalogServiceAddr }}
+          - name: CURRENCY_SERVICE_ADDR
+            value: {{ .Values.env.currencyServiceAddr }}
+          - name: CART_SERVICE_ADDR
+            value: {{ .Values.env.cartServiceAddr }}
+          - name: RECOMMENDATION_SERVICE_ADDR
+            value: {{ .Values.env.recommendationServiceAddr }}
+          - name: SHIPPING_SERVICE_ADDR
+            value: {{ .Values.env.shippingServiceAddr }}
+          - name: CHECKOUT_SERVICE_ADDR
+            value: {{ .Values.env.checkoutServiceAddr }}
+          - name: AD_SERVICE_ADDR
+            value: {{ .Values.env.AdServiceAddr }}
+          # - name: JAEGER_SERVICE_ADDR
+          #   value: {{ .Values.env.jaegerServiceAddr }}
+          resources:
+            requests:
+              cpu: {{ .Values.cartService.resources.requests.cpu }}
+              memory: {{ .Values.cartService.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.cartService.resources.limits.cpu }}
+              memory: {{ .Values.cartService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymentservice
+spec:
+  selector:
+    matchLabels:
+      app: paymentservice
+  template:
+    metadata:
+      labels:
+        app: paymentservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.paymentService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.paymentService.image.repository .Values.paymentService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.paymentService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.paymentService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.paymentService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.paymentService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.paymentService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.paymentService.resources.requests.cpu }}
+            memory: {{ .Values.paymentService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.paymentService.resources.limits.cpu }}
+            memory: {{ .Values.paymentService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productcatalogservice
+spec:
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      labels:
+        app: productcatalogservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.productCatalogService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.productCatalogService.image.repository .Values.productCatalogService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.productCatalogService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.productCatalogService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.productCatalogService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.productCatalogService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.productCatalogService.healthChecks.livenessProbe.exec.probePort }}
+#        env:
+#          - name: JAEGER_SERVICE_ADDR
+#            value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.productCatalogService.resources.requests.cpu }}
+            memory: {{ .Values.productCatalogService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.productCatalogService.resources.limits.cpu }}
+            memory: {{ .Values.productCatalogService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice
+spec:
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.cartService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.cartService.image.repository .Values.cartService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.cartService.ports.containerPort }}
+        env:
+        - name: REDIS_ADDR
+          value: {{ .Values.env.redisAddr }}
+        - name: PORT
+          value: "7070"
+        - name: LISTEN_ADDR
+          value: "0.0.0.0"
+        resources:
+          requests:
+            cpu: {{ .Values.cartService.resources.requests.cpu }}
+            memory: {{ .Values.cartService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.cartService.resources.limits.cpu }}
+            memory: {{ .Values.cartService.resources.limits.memory }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.cartService.healthChecks.livenessProbe.initialDelaySeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.cartService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.cartService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.cartService.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.cartService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.cartService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.cartService.healthChecks.livenessProbe.exec.probePort }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currencyservice
+spec:
+  selector:
+    matchLabels:
+      app: currencyservice
+  template:
+    metadata:
+      labels:
+        app: currencyservice
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.currencyService.terminationGracePeriodSeconds }}
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.currencyService.image.repository .Values.currencyService.image.tag }}
+        ports:
+        - name: {{ .Values.currencyService.ports.name }}
+          containerPort: {{ .Values.currencyService.ports.containerPort }}
+        readinessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.currencyService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.currencyService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.currencyService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.currencyService.healthChecks.livenessProbe.exec.probePort }}
+        resources:
+          requests:
+            cpu: {{ .Values.currencyService.resources.requests.cpu }}
+            memory: {{ .Values.currencyService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.currencyService.resources.limits.cpu }}
+            memory: {{ .Values.currencyService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shippingservice
+spec:
+  selector:
+    matchLabels:
+      app: shippingservice
+  template:
+    metadata:
+      labels:
+        app: shippingservice
+    spec:
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.shippingService.image.repository .Values.shippingService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.shippingService.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.shippingService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.shippingService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.shippingService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.shippingService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.shippingService.healthChecks.livenessProbe.exec.probePort }}
+#        env:
+#          - name: JAEGER_SERVICE_ADDR
+#            value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.shippingService.resources.requests.cpu }}
+            memory: {{ .Values.shippingService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.shippingService.resources.limits.cpu }}
+            memory: {{ .Values.shippingService.resources.limits.memory }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cart
+spec:
+  selector:
+    matchLabels:
+      app: redis-cart
+  template:
+    metadata:
+      labels:
+        app: redis-cart
+    spec:
+      containers:
+      - name: redis
+        image: {{ printf "%s:%s" .Values.redisCart.image.repository .Values.redisCart.image.tag }}
+        ports:
+        - containerPort: {{ .Values.redisCart.ports.containerPort }}
+        readinessProbe:
+          periodSeconds: {{ .Values.redisCart.healthChecks.readinessProbe.periodSeconds }}
+          tcpSocket:
+            port: {{ .Values.redisCart.healthChecks.readinessProbe.tcpSocket.port }}
+        livenessProbe:
+          periodSeconds: {{ .Values.redisCart.healthChecks.livenessProbe.periodSeconds }}
+          tcpSocket:
+            port: {{ .Values.redisCart.healthChecks.livenessProbe.tcpSocket.port }}
+        volumeMounts:
+        - mountPath: {{ .Values.redisCart.volumeMounts.mountPath }}
+          name: {{ .Values.redisCart.volumeMounts.name }}
+        resources:
+          requests:
+            cpu: {{ .Values.redisCart.resources.requests.cpu }}
+            memory: {{ .Values.redisCart.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.redisCart.resources.limits.cpu }}
+            memory: {{ .Values.redisCart.resources.limits.memory }}
+      volumes:
+      - name: {{ .Values.redisCart.volumes.name }}
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adservice
+spec:
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: {{ printf "%s:%s" .Values.adsService.image.repository .Values.adsService.image.tag }}
+        ports:
+        - containerPort: {{ .Values.adsService.ports.containerPort }}
+        env:
+        - name: PORT
+          value: "9555"
+        #- name: JAEGER_SERVICE_ADDR
+        #  value: {{ .Values.env.jaegerServiceAddr }}
+        resources:
+          requests:
+            cpu: {{ .Values.adsService.resources.requests.cpu }}
+            memory: {{ .Values.adsService.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.adsService.resources.limits.cpu }}
+            memory: {{ .Values.adsService.resources.limits.memory }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.adsService.healthChecks.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.adsService.healthChecks.readinessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.adsService.healthChecks.readinessProbe.exec.probeBinaryPath .Values.adsService.healthChecks.readinessProbe.exec.probePort }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.adsService.healthChecks.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.adsService.healthChecks.livenessProbe.periodSeconds }}
+          exec:
+            command: {{ printf "[%q, \"-addr=:%v\"]" .Values.adsService.healthChecks.livenessProbe.exec.probeBinaryPath .Values.adsService.healthChecks.livenessProbe.exec.probePort }}

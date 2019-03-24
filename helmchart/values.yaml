@@ -1,0 +1,354 @@
+env:
+  productCatalogServiceAddr: "productcatalogservice:3550"
+  shippingServiceAddr: "shippingservice:50051"
+  paymentServiceAddr: "paymentservice:50051"
+  emailServiceAddr: "emailservice:5000"
+  currencyServiceAddr: "currencyservice:7000"
+  cartServiceAddr: "cartservice:7070"
+  checkoutServiceAddr: "checkoutservice:5050"
+  AdServiceAddr: "adservice:9555"
+  recommendationServiceAddr: "recommendationservice:8080"
+  redisAddr: "redis-cart:6379"
+  jaegerServiceAddr: "jaeger-collector:14268"
+
+emailService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/emailservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 8080
+  healthChecks:
+    readinessProbe:
+      periodSeconds: 5
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 8080
+    livenessProbe:
+      periodSeconds: 5
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 5000
+
+checkoutService:
+  image:
+    repository: gcr.io/google-samples/microservices-demo/checkoutservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 5050
+  healthChecks:
+    readinessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 5050
+    livenessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 5050
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 5050
+
+recommendationService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/recommendationservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 8080
+  healthChecks:
+    readinessProbe:
+      periodSeconds: 5
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 8080
+    livenessProbe:
+      periodSeconds: 5
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 220Mi
+    limits:
+      cpu: 200m
+      memory: 450Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 8080
+
+frontend:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/frontend
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 8080
+  healthChecks:
+    readinessProbe:
+      initialDelaySeconds: 10
+      httpGet:
+        path: "/_healthz"
+        port: 8080
+        httpHeaders:
+          name: "Cookie"
+          value: "shop_session-id=x-readiness-probe"
+    livenessProbe:
+      initialDelaySeconds: 10
+      httpGet:
+        path: "/_healthz"
+        port: 8080
+        httpHeaders:
+          name: "Cookie"
+          value: "shop_session-id=x-liveness-probe"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: http
+    port: 80
+  
+paymentService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/paymentservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 50051
+  healthChecks:
+    readinessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 50051
+    livenessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 50051
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 50051
+
+productCatalogService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/productcatalogservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 3550
+  healthChecks:
+    readinessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 3550
+    livenessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 3550
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 3550
+  
+cartService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/cartservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 7070
+  healthChecks:
+    readinessProbe:
+      initialDelaySeconds: 15
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 7070
+    livenessProbe:
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 7070
+  resources:
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 7070
+
+currencyService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/currencyservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    name: grpc
+    containerPort: 7000
+  healthChecks:
+    readinessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 7000
+    livenessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 7000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 7000
+
+shippingService:
+  image:
+    repository: gcr.io/google-samples/microservices-demo/shippingservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 50051
+  healthChecks:
+    readinessProbe:
+      periodSeconds: 5
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 50051
+    livenessProbe:
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 50051
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 50051
+
+redisCart:
+  image:
+    repository: redis
+    tag: alpine
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 6379
+  healthChecks:
+    readinessProbe:
+      periodSeconds: 5
+      tcpSocket:
+        port: 6379
+    livenessProbe:
+      periodSeconds: 5
+      tcpSocket:
+        port: 6379
+  resources:
+    requests:
+      cpu: 70m
+      memory: 200Mi
+    limits:
+      cpu: 125m
+      memory: 256Mi
+  volumeMounts:
+    mountPath: /data
+    name: redis-data
+  volumes:
+    name: redis-data
+  service:
+    type: ClusterIP
+    name: redis
+    port: 6379
+  
+adsService:
+  terminationGracePeriodSeconds: 5
+  image:
+    repository: gcr.io/google-samples/microservices-demo/adservice
+    tag: v0.1.0
+    pullPolicy: IfNotPresent
+  ports:
+    containerPort: 9555
+  healthChecks:
+    readinessProbe:
+      initialDelaySeconds: 20
+      periodSeconds: 15
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 9555
+    livenessProbe:
+      initialDelaySeconds: 20
+      periodSeconds: 15
+      exec:
+        probeBinaryPath: "/bin/grpc_health_probe"
+        probePort: 9555
+  resources:
+    requests:
+      cpu: 200m
+      memory: 180Mi
+    limits:
+      cpu: 300m
+      memory: 300Mi
+  service:
+    type: ClusterIP
+    name: grpc
+    port: 9555
