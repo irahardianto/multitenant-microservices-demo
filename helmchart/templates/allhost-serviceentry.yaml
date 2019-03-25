@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ .Release.Name }}-allhosts-serviceentry
+  namespace: {{ .Release.Name }}
+spec:
+  hosts:
+  - "*.{{ .Release.Name }}.svc.cluster.local"
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  - number: 443
+    name: https
+    protocol: HTTPS
+  - number: 7070
+    name: grpc-cartservice
+    protocol: GRPC
+  - number: 3550
+    name: grpc-productcatalogservice
+    protocol: GRPC
+  - number: 7000
+    name: grpc-currencyservice
+    protocol: GRPC
+  - number: 50051
+    name: grpc-paymentshippingservice
+    protocol: GRPC
+  - number: 5000
+    name: grpc-emailservice
+    protocol: GRPC
+  - number: 5050
+    name: grpc-checkoutservice
+    protocol: GRPC
+  - number: 8080
+    name: grpc-recommendationservice
+    protocol: GRPC
+  - number: 9555
+    name: grpc-adservice
+    protocol: GRPC
+  - number: 6379
+    name: tcp-rediscart
+    protocol: TCP
